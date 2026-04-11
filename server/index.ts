@@ -12,6 +12,11 @@ const employeeSchema = z.object({
   email: z.string(),
 });
 
+const loginSchema = z.object({
+  email: z.string(),
+  loginCode: z.string().length(4, "Login code must be 4 characters"),
+});
+
 const shiftSchema = z.object({
   shiftType: z.enum(["MORNING", "AFTERNOON", "EVENING"]),
 });
@@ -47,6 +52,39 @@ app.listen(3000, () => {
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const validatedLogin = loginSchema.safeParse(req.body);
+    if (!validatedLogin.success) {
+      return res.status(400).json({
+        errors: validatedLogin.error,
+      });
+    }
+
+    const { email, loginCode } = validatedLogin.data;
+    const employee = await prisma.employee.findFirst({
+      where: {
+        loginCode,
+        user: {
+          email,
+        },
+      },
+    });
+
+    if (!employee) {
+      return res.status(401).json({ error: "Invalid email or login code" });
+    }
+
+    res.json({
+      message: "Login successful",
+      employee,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "An error occurred during login" });
+  }
 });
 
 //get all employees
