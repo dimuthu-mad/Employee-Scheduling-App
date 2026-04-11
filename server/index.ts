@@ -1,7 +1,42 @@
 import express from "express";
 import { AvailabilityStatus, PrismaClient } from "@prisma/client";
 import { Position, Role } from "@prisma/client";
+import { z } from "zod";
 const prisma = new PrismaClient();
+
+const employeeSchema = z.object({
+  firstName: z.string().min(2).max(50),
+  lastName: z.string().min(2).max(50),
+  loginCode: z.string().length(4, "Login code must be 4 characters"),
+  position: z.enum(["HEAD_WAITER", "WAITER", "RUNNER"]),
+  email: z.string(),
+});
+
+const shiftSchema = z.object({
+  shiftType: z.enum(["MORNING", "AFTERNOON", "EVENING"]),
+});
+
+const availabilitySchema = z.object({
+  employeeId: z.number(),
+  shiftId: z.number(),
+  date: z.date(),
+  status: z.enum(["AVAILABLE", "UNAVAILABLE", "PREFERED"]),
+});
+
+const scheduleEntrySchema = z.object({
+  employeeId: z.number(),
+  shiftId: z.number(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+});
+
+const scheduleIdParamSchema = z.object({
+  scheduleEntryId: z.coerce
+    .number()
+    .int()
+    .positive("scheduleEntryId must be a valid number"),
+});
 
 const app = express();
 app.use(express.json());
@@ -30,7 +65,14 @@ app.get("/employees", async (req, res) => {
 //create new employee
 app.post("/employees", async (req, res) => {
   try {
-    const { firstName, lastName, loginCode, position, email } = req.body;
+    const validatedEmployee = employeeSchema.safeParse(req.body);
+    if (!validatedEmployee.success) {
+      return res.status(400).json({
+        errors: validatedEmployee.error,
+      });
+    }
+    const { firstName, lastName, loginCode, position, email } =
+      validatedEmployee.data;
 
     const existingEmployee = await prisma.employee.findUnique({
       where: { loginCode },
@@ -208,16 +250,13 @@ app.get("/schedule", async (req, res) => {
 //create new schedule entry
 app.post("/schedule", async (req, res) => {
   try {
-    const { employeeId, shiftId, date } = req.body;
-
-    if (!employeeId || !shiftId || !date) {
+    const validatedScheduleEntry = scheduleEntrySchema.safeParse(req.body);
+    if (!validatedScheduleEntry.success) {
       return res.status(400).json({
-        error: "employeeId, shiftId and date are required",
+        errors: validatedScheduleEntry.error,
       });
     }
-
-    const parsedEmployeeId = parseInt(employeeId);
-    const parsedShiftId = parseInt(shiftId);
+    const { date, employeeId, shiftId } = validatedScheduleEntry.data;
 
     const normalizedDate = new Date(
       new Date(date).toISOString().split("T")[0] + "T00:00:00.000Z",
@@ -226,8 +265,8 @@ app.post("/schedule", async (req, res) => {
     //check existing schedule
     const existingSchedule = await prisma.scheduleEntry.findFirst({
       where: {
-        employeeId: parsedEmployeeId,
-        shiftId: parsedShiftId,
+        employeeId: employeeId,
+        shiftId: shiftId,
         date: normalizedDate,
       },
     });
@@ -241,8 +280,8 @@ app.post("/schedule", async (req, res) => {
     //create schedule
     const newSchedule = await prisma.scheduleEntry.create({
       data: {
-        employeeId: parsedEmployeeId,
-        shiftId: parsedShiftId,
+        employeeId: employeeId,
+        shiftId: shiftId,
         date: normalizedDate,
       },
       include: {
@@ -267,24 +306,37 @@ app.post("/schedule", async (req, res) => {
 
 app.delete("/schedule/:scheduleEntryId", async (req, res) => {
   try {
-    const scheduleEntryId = parseInt(req.params.scheduleEntryId);
-    if (isNaN(scheduleEntryId)) {
-      return res.status(400).json({ error: "Invalid scheduleEntryId" });
+    const validation = scheduleIdParamSchema.safeParse(req.params);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Invalid scheduleEntryId",
+        details: validation.error.flatten(),
+      });
     }
+
+    const { scheduleEntryId } = validation.data;
+
     const existingScheduleEntry = await prisma.scheduleEntry.findUnique({
       where: { scheduleEntryId },
     });
+
     if (!existingScheduleEntry) {
-      return res.status(404).json({ error: "Schedule entry not found" });
+      return res.status(404).json({
+        error: "Schedule entry not found",
+      });
     }
+
     await prisma.scheduleEntry.delete({
       where: { scheduleEntryId },
     });
-    return res
-      .status(200)
-      .json({ message: "Schedule entry deleted successfully" });
+
+    return res.status(200).json({
+      message: "Schedule entry deleted successfully",
+    });
   } catch (error: any) {
     console.error("Error deleting schedule entry:", error);
+
     return res.status(500).json({
       error: "Failed to delete schedule entry",
       details: error.message,
