@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthSession } from "../auth";
 import hotelLogo from "../assets/HotellLogo.png";
+import userLogo from "../assets/user.png";
 
 type EmployeeRow = {
   employeeId: number;
   firstName: string;
   lastName: string;
   position: string;
+  loginCode: string;
   user?: {
     email: string;
   };
@@ -88,13 +90,18 @@ export function ViewAllEmployees() {
               employees.map((employee) => (
                 <article className="employee-card" key={employee.employeeId}>
                   <div className="employee-avatar" aria-hidden="true">
-                    <span>●</span>
+                    <img
+                      src={userLogo}
+                      alt="Employee avatar"
+                      className="Employee-avatar"
+                    />
                   </div>
                   <h3>{`${employee.firstName} ${employee.lastName}`}</h3>
                   <p>{employee.user?.email ?? "-"}</p>
                   <p className="employee-role">
                     {employee.position.replaceAll("_", " ")}
                   </p>
+                  <p>{`${employee.loginCode}`}</p>
                   <div className="employee-actions">
                     <button type="button" className="employee-edit-btn">
                       Edit

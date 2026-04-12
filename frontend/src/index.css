@@ -372,7 +372,7 @@ code {
   height: 52px;
   border-radius: 50%;
   margin: 6px auto 10px;
-  background: #111827;
+  background: #ffffff;
   color: #ffffff;
   display: grid;
   place-items: center;
@@ -477,4 +477,8 @@ code {
   margin: 0 auto 24px;
   width: 250px;
   height: auto;
+}
+
+.Employee-avatar {
+  width: inherit !important;
 }
