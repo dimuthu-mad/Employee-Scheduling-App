@@ -260,6 +260,218 @@ code {
   }
 }
 
+.employees-shell {
+  min-height: 100svh;
+  width: min(1400px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+  text-align: left;
+  background:
+    radial-gradient(
+      circle at 10% 20%,
+      rgba(251, 146, 60, 0.16),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 86% 16%,
+      rgba(14, 165, 233, 0.15),
+      transparent 44%
+    ),
+    linear-gradient(145deg, #f5f7fb 0%, #edf3fa 100%);
+}
+
+.employees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #d7e2ef;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
+.employees-logo {
+  width: 172px;
+  height: auto;
+}
+
+.employees-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.register-employee-btn,
+.logout-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #0d86b8, #0a678f);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    filter 0.2s ease;
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
+
+.register-employee-btn:hover,
+.logout-btn:hover {
+  filter: brightness(1.06);
+}
+
+.register-employee-btn:active,
+.logout-btn:active {
+  transform: translateY(1px);
+}
+
+.employees-card {
+  border: 1px solid #d7e2ef;
+  border-radius: 16px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
+.employees-title {
+  margin: 0 0 6px;
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.employees-meta {
+  margin: 8px 0 16px;
+  color: #56657d;
+}
+
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.employee-card {
+  border: 1px solid #d2deed;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #eef4fb 0 38%, #ffffff 38% 100%);
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.employee-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin: 6px auto 10px;
+  background: #111827;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.employee-card h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #263447;
+}
+
+.employee-card p {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #5a687b;
+}
+
+.employee-role {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #e8f4fb;
+  color: #0a678f;
+  font-weight: 600;
+}
+
+.employee-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.employee-edit-btn,
+.employee-delete-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #ffffff;
+  transition:
+    filter 0.2s ease,
+    transform 0.1s ease;
+}
+
+.employee-edit-btn {
+  background: linear-gradient(135deg, #0d86b8, #0a678f);
+}
+
+.employee-delete-btn {
+  background: linear-gradient(135deg, #d94a38, #b42318);
+}
+
+.employee-edit-btn:hover,
+.employee-delete-btn:hover {
+  filter: brightness(1.08);
+}
+
+.employee-edit-btn:active,
+.employee-delete-btn:active {
+  transform: translateY(1px);
+}
+
+.employees-error {
+  color: #b42318;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .employees-shell {
+    width: calc(100vw - 20px);
+    padding: 12px 10px 18px;
+  }
+
+  .employees-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .employees-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .employees-card {
+    padding: 18px;
+  }
+
+  .employees-title {
+    font-size: 32px;
+  }
+}
+
 .hotel-logo {
   display: block;
   margin: 0 auto 24px;
