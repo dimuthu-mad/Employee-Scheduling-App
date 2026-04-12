@@ -44,6 +44,10 @@ const scheduleIdParamSchema = z.object({
     .positive("scheduleEntryId must be a valid number"),
 });
 
+const employeeIdParamSchema = z.object({
+  employeeId: z.coerce.number().int().positive(),
+});
+
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
@@ -170,6 +174,58 @@ app.post("/employees", async (req, res) => {
   } catch (error) {
     console.error("Error creating employee:", error);
     res.status(500).json({ error: "Failed to create employee" });
+  }
+});
+
+app.put("/employees/:employeeId", async (req, res) => {
+  try {
+    const validatedId = employeeIdParamSchema.safeParse(req.params);
+    if (!validatedId.success) {
+      return res.status(400).json({
+        errors: validatedId.error,
+      });
+    }
+    const validatedEmployee = employeeSchema.safeParse(req.body);
+    if (!validatedEmployee.success) {
+      return res.status(400).json({
+        errors: validatedEmployee.error,
+      });
+    }
+
+    const { employeeId } = validatedId.data;
+    const { firstName, lastName, loginCode, position, email } =
+      validatedEmployee.data;
+
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { employeeId },
+      include: { user: true },
+    });
+    if (!existingEmployee) {
+      return res.status(404).json({
+        error: "Employee not found",
+      });
+    }
+    const updatedEmployee = await prisma.employee.update({
+      where: { employeeId },
+      data: {
+        firstName,
+        lastName,
+        loginCode,
+        position,
+        user: {
+          update: {
+            email,
+          },
+        },
+      },
+    });
+    res.json(updatedEmployee);
+  } catch (error) {
+    console.error("Error updating employee:", error);
+    return res.status(500).json({
+      error: "Failed to update employee",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 

@@ -1,8 +1,19 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAuthSession, getAuthSession } from "../auth";
 import hotelLogo from "../assets/HotellLogo.png";
 import userLogo from "../assets/user.png";
+
+type EmployeePosition = "HEAD_WAITER" | "WAITER" | "RUNNER";
+
+type EmployeeFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  loginCode: string;
+  position: EmployeePosition;
+};
 
 type EmployeeRow = {
   employeeId: number;
@@ -23,35 +34,123 @@ export function ViewAllEmployees() {
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRow | null>(
+    null,
+  );
+  const [editFormData, setEditFormData] = useState<EmployeeFormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    loginCode: "",
+    position: "WAITER",
+  });
+  const [editError, setEditError] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  const loadEmployees = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      const response = await fetch(`${API_URL}/employees`);
+      if (!response.ok) {
+        throw new Error("Failed to load employees");
+      }
+
+      const data = (await response.json()) as EmployeeRow[];
+      setEmployees(data);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Could not load employees",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadEmployees = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage("");
-
-        const response = await fetch(`${API_URL}/employees`);
-        if (!response.ok) {
-          throw new Error("Failed to load employees");
-        }
-
-        const data = (await response.json()) as EmployeeRow[];
-        setEmployees(data);
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Could not load employees",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadEmployees();
+    void loadEmployees();
   }, []);
 
   const handleLogout = () => {
     clearAuthSession();
     navigate("/login", { replace: true });
+  };
+
+  const handleEditClick = (employee: EmployeeRow) => {
+    setSelectedEmployee(employee);
+    setEditFormData({
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      email: employee.user?.email ?? "",
+      loginCode: employee.loginCode,
+      position:
+        employee.position === "HEAD_WAITER" ||
+        employee.position === "WAITER" ||
+        employee.position === "RUNNER"
+          ? employee.position
+          : "WAITER",
+    });
+    setEditError("");
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedEmployee(null);
+    setEditFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      loginCode: "",
+      position: "WAITER",
+    });
+    setEditError("");
+  };
+
+  const handleSaveEdit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!selectedEmployee) {
+      return;
+    }
+
+    try {
+      setIsSavingEdit(true);
+      setEditError("");
+
+      const response = await fetch(
+        `${API_URL}/employees/${selectedEmployee.employeeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firstName: editFormData.firstName.trim(),
+            lastName: editFormData.lastName.trim(),
+            email: editFormData.email.trim(),
+            loginCode: editFormData.loginCode.trim(),
+            position: editFormData.position,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        throw new Error(data.error || "Failed to update employee");
+      }
+
+      await loadEmployees();
+      handleCloseModal();
+    } catch (error) {
+      setEditError(
+        error instanceof Error ? error.message : "Failed to save changes",
+      );
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   return (
@@ -103,7 +202,11 @@ export function ViewAllEmployees() {
                   </p>
                   <p>{`${employee.loginCode}`}</p>
                   <div className="employee-actions">
-                    <button type="button" className="employee-edit-btn">
+                    <button
+                      type="button"
+                      className="employee-edit-btn"
+                      onClick={() => handleEditClick(employee)}
+                    >
                       Edit
                     </button>
                     <button type="button" className="employee-delete-btn">
@@ -116,6 +219,137 @@ export function ViewAllEmployees() {
           </div>
         ) : null}
       </section>
+
+      {isEditModalOpen && selectedEmployee ? (
+        <div className="edit-modal-overlay" onClick={handleCloseModal}>
+          <div
+            className="edit-modal"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="edit-modal-header">
+              <div>
+                <p className="edit-modal-kicker">Edit employee</p>
+                <h2>
+                  {selectedEmployee.firstName} {selectedEmployee.lastName}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="edit-modal-close"
+                onClick={handleCloseModal}
+                aria-label="Close edit form"
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="edit-form" onSubmit={handleSaveEdit}>
+              <div className="edit-form-grid">
+                <label className="edit-field">
+                  <span>First name</span>
+                  <input
+                    type="text"
+                    value={editFormData.firstName}
+                    onChange={(event) =>
+                      setEditFormData((current) => ({
+                        ...current,
+                        firstName: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="edit-field">
+                  <span>Last name</span>
+                  <input
+                    type="text"
+                    value={editFormData.lastName}
+                    onChange={(event) =>
+                      setEditFormData((current) => ({
+                        ...current,
+                        lastName: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="edit-field edit-field-wide">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(event) =>
+                      setEditFormData((current) => ({
+                        ...current,
+                        email: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="edit-field">
+                  <span>Login code</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={editFormData.loginCode}
+                    onChange={(event) =>
+                      setEditFormData((current) => ({
+                        ...current,
+                        loginCode: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="edit-field">
+                  <span>Position</span>
+                  <select
+                    value={editFormData.position}
+                    onChange={(event) =>
+                      setEditFormData((current) => ({
+                        ...current,
+                        position: event.target.value as EmployeePosition,
+                      }))
+                    }
+                  >
+                    <option value="HEAD_WAITER">Head Waiter</option>
+                    <option value="WAITER">Waiter</option>
+                    <option value="RUNNER">Runner</option>
+                  </select>
+                </label>
+              </div>
+
+              {editError ? <p className="edit-error">{editError}</p> : null}
+
+              <div className="edit-form-actions">
+                <button
+                  type="button"
+                  className="edit-cancel-btn"
+                  onClick={handleCloseModal}
+                  disabled={isSavingEdit}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="edit-save-btn"
+                  disabled={isSavingEdit}
+                >
+                  {isSavingEdit ? "Saving..." : "Save changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
