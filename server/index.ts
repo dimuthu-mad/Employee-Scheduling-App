@@ -64,26 +64,50 @@ app.post("/login", async (req, res) => {
     }
 
     const { email, loginCode } = validatedLogin.data;
-    const employee = await prisma.employee.findFirst({
-      where: {
-        loginCode,
-        user: {
-          email,
-        },
-      },
+
+    const findUser = await prisma.user.findUnique({
+      where: { email },
+      include: { employee: true },
     });
 
-    if (!employee) {
-      return res.status(401).json({ error: "Invalid email or login code" });
+    if (!findUser) {
+      return res.status(401).json({ error: "Invalid email" });
     }
 
-    res.json({
-      message: "Login successful",
-      employee,
+    if (findUser.role === Role.EMPLOYER) {
+      return res.status(200).json({
+        message: "Employer login successful",
+        findUser,
+      });
+    }
+
+    if (findUser.role === Role.EMPLOYEE) {
+      if (!findUser.employee) {
+        return res.status(401).json({
+          error: "Employee record not found",
+        });
+      }
+
+      if (findUser.employee.loginCode !== loginCode) {
+        return res.status(401).json({
+          error: "Invalid email or login code",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Employee login successful",
+        findUser,
+      });
+    }
+
+    return res.status(401).json({
+      error: "Invalid login",
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "An error occurred during login" });
+    return res.status(500).json({
+      error: "An error occurred during login",
+    });
   }
 });
 
