@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { AvailabilityStatus, PrismaClient } from "@prisma/client";
 import { Position, Role } from "@prisma/client";
 import { z } from "zod";
@@ -44,6 +45,7 @@ const scheduleIdParamSchema = z.object({
 });
 
 const app = express();
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 app.listen(3000, () => {
