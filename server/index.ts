@@ -241,7 +241,7 @@ app.delete("/employees/:employeeId", async (req, res) => {
     const { employeeId } = validatedId.data;
     const existingEmployee = await prisma.employee.findUnique({
       where: { employeeId },
-      include: { user: true },
+      select: { employeeId: true, userId: true },
     });
 
     if (!existingEmployee) {
@@ -250,13 +250,14 @@ app.delete("/employees/:employeeId", async (req, res) => {
       });
     }
 
-    await prisma.employee.delete({
-      where: { employeeId },
-      include: { user: true },
+    await prisma.$transaction(async (tx) => {
+      await tx.user.delete({
+        where: { userId: existingEmployee.userId },
+      });
     });
 
     return res.status(200).json({
-      message: "Employee deleted successfully",
+      message: "Employee and linked user deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting employee:", error);

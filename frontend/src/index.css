@@ -233,6 +233,119 @@ code {
   font-weight: 600;
 }
 
+.register-shell {
+  min-height: 100svh;
+  display: block;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at 15% 22%,
+      rgba(13, 134, 184, 0.2),
+      transparent 44%
+    ),
+    radial-gradient(
+      circle at 87% 18%,
+      rgba(16, 185, 129, 0.14),
+      transparent 46%
+    ),
+    linear-gradient(145deg, #f5f7fb 0%, #edf3fa 100%);
+}
+
+.register-card {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #d7e2ef;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+  animation: login-enter 0.4s ease-out;
+}
+
+.register-title {
+  text-align: center;
+  margin: 10px 0 20px;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.register-form {
+  display: grid;
+  gap: 14px;
+}
+
+.register-label {
+  display: grid;
+  gap: 6px;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.register-input {
+  width: 100%;
+  border: 1px solid #c7d5e5;
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.register-input:focus {
+  border-color: #0a79a7;
+  box-shadow: 0 0 0 3px rgba(10, 121, 167, 0.18);
+  outline: none;
+}
+
+.register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.register-cancel-btn,
+.register-submit-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.register-cancel-btn {
+  background: #dbe7f2;
+  color: #304155;
+}
+
+.register-submit-btn {
+  background: linear-gradient(135deg, #0d86b8, #0a678f);
+  color: #ffffff;
+}
+
+.register-cancel-btn:disabled,
+.register-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.register-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 @keyframes login-enter {
   from {
     opacity: 0;

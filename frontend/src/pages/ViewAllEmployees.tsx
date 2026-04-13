@@ -214,7 +214,11 @@ export function ViewAllEmployees() {
           alt="Sundsgarden Hotel"
         />
         <div className="employees-header-actions">
-          <button type="button" className="register-employee-btn">
+          <button
+            type="button"
+            className="register-employee-btn"
+            onClick={() => navigate("/employees/new")}
+          >
             Register new Employee
           </button>
           <button type="button" className="logout-btn" onClick={handleLogout}>
