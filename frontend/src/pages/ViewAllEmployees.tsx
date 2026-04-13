@@ -47,6 +47,11 @@ export function ViewAllEmployees() {
   });
   const [editError, setEditError] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingEmployeeId, setDeletingEmployeeId] = useState<number | null>(
+    null,
+  );
+  const [pendingDeleteEmployee, setPendingDeleteEmployee] =
+    useState<EmployeeRow | null>(null);
 
   const loadEmployees = async () => {
     try {
@@ -153,6 +158,53 @@ export function ViewAllEmployees() {
     }
   };
 
+  const openDeleteModal = (employee: EmployeeRow) => {
+    setPendingDeleteEmployee(employee);
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingEmployeeId !== null) {
+      return;
+    }
+
+    setPendingDeleteEmployee(null);
+  };
+
+  const handleDeleteEmployee = async () => {
+    if (!pendingDeleteEmployee) {
+      return;
+    }
+
+    try {
+      setDeletingEmployeeId(pendingDeleteEmployee.employeeId);
+      setErrorMessage("");
+
+      const response = await fetch(
+        `${API_URL}/employees/${pendingDeleteEmployee.employeeId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        throw new Error(data.error || "Failed to delete employee");
+      }
+
+      await loadEmployees();
+      if (selectedEmployee?.employeeId === pendingDeleteEmployee.employeeId) {
+        handleCloseModal();
+      }
+      setPendingDeleteEmployee(null);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Could not delete employee",
+      );
+    } finally {
+      setDeletingEmployeeId(null);
+    }
+  };
+
   return (
     <main className="employees-shell">
       <header className="employees-header">
@@ -206,11 +258,19 @@ export function ViewAllEmployees() {
                       type="button"
                       className="employee-edit-btn"
                       onClick={() => handleEditClick(employee)}
+                      disabled={deletingEmployeeId === employee.employeeId}
                     >
                       Edit
                     </button>
-                    <button type="button" className="employee-delete-btn">
-                      Delete
+                    <button
+                      type="button"
+                      className="employee-delete-btn"
+                      onClick={() => openDeleteModal(employee)}
+                      disabled={deletingEmployeeId === employee.employeeId}
+                    >
+                      {deletingEmployeeId === employee.employeeId
+                        ? "Deleting..."
+                        : "Delete"}
                     </button>
                   </div>
                 </article>
@@ -347,6 +407,65 @@ export function ViewAllEmployees() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {pendingDeleteEmployee ? (
+        <div className="edit-modal-overlay" onClick={closeDeleteModal}>
+          <div
+            className="edit-modal"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="edit-modal-header">
+              <div>
+                <p className="edit-modal-kicker">Confirm delete</p>
+                <h2>
+                  Delete {pendingDeleteEmployee.firstName}{" "}
+                  {pendingDeleteEmployee.lastName}?
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="edit-modal-close"
+                onClick={closeDeleteModal}
+                aria-label="Close delete confirmation"
+                disabled={
+                  deletingEmployeeId === pendingDeleteEmployee.employeeId
+                }
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="employees-error">This cannot be undone.</p>
+
+            <div className="edit-form-actions">
+              <button
+                type="button"
+                className="edit-cancel-btn"
+                onClick={closeDeleteModal}
+                disabled={
+                  deletingEmployeeId === pendingDeleteEmployee.employeeId
+                }
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="employee-delete-btn"
+                onClick={handleDeleteEmployee}
+                disabled={
+                  deletingEmployeeId === pendingDeleteEmployee.employeeId
+                }
+              >
+                {deletingEmployeeId === pendingDeleteEmployee.employeeId
+                  ? "Deleting..."
+                  : "Delete"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

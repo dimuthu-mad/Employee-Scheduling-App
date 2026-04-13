@@ -229,6 +229,44 @@ app.put("/employees/:employeeId", async (req, res) => {
   }
 });
 
+app.delete("/employees/:employeeId", async (req, res) => {
+  try {
+    const validatedId = employeeIdParamSchema.safeParse(req.params);
+    if (!validatedId.success) {
+      return res.status(400).json({
+        errors: validatedId.error,
+      });
+    }
+
+    const { employeeId } = validatedId.data;
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { employeeId },
+      include: { user: true },
+    });
+
+    if (!existingEmployee) {
+      return res.status(404).json({
+        error: "Employee not found",
+      });
+    }
+
+    await prisma.employee.delete({
+      where: { employeeId },
+      include: { user: true },
+    });
+
+    return res.status(200).json({
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    return res.status(500).json({
+      error: "Failed to delete employee",
+      details: error instanceof Error ? error.message : error,
+    });
+  }
+});
+
 //get employee by id
 app.get("/employees/:id", async (req, res) => {
   try {
