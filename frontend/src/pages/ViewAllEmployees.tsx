@@ -217,6 +217,13 @@ export function ViewAllEmployees() {
           <button
             type="button"
             className="register-employee-btn"
+            onClick={() => navigate("/schedule")}
+          >
+            Job Schedule
+          </button>
+          <button
+            type="button"
+            className="register-employee-btn"
             onClick={() => navigate("/employees/new")}
           >
             Register new Employee

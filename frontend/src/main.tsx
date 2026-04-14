@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { EmployeeDashboard } from "./pages/EmployeeDashboard";
+import { JobSchedulePage } from "./pages/JobSchedulePage";
 import { RegisterEmployeePage } from "./pages/RegisterEmployeePage";
 import { ViewAllEmployees } from "./pages/ViewAllEmployees";
 import { LoginPage } from "./pages/LoginPage";
@@ -28,6 +29,14 @@ createRoot(document.getElementById("root")!).render(
           element={
             <ProtectedRoute allowedRoles={["EMPLOYER"]}>
               <RegisterEmployeePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <ProtectedRoute allowedRoles={["EMPLOYER"]}>
+              <JobSchedulePage />
             </ProtectedRoute>
           }
         />
