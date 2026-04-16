@@ -52,6 +52,10 @@ const scheduleIdParamSchema = z.object({
     .positive("scheduleEntryId must be a valid number"),
 });
 
+const scheduleApprovalSchema = z.object({
+  employeeId: z.number().int().positive(),
+});
+
 const employeeIdParamSchema = z.object({
   employeeId: z.coerce.number().int().positive(),
 });
@@ -666,6 +670,69 @@ app.put("/schedule/:scheduleEntryId", async (req, res) => {
   }
 });
 
+app.patch("/schedule/:scheduleEntryId/approve", async (req, res) => {
+  try {
+    const validation = scheduleIdParamSchema.safeParse(req.params);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Invalid scheduleEntryId",
+        details: validation.error.flatten(),
+      });
+    }
+
+    const { scheduleEntryId } = validation.data;
+    const approvalValidation = scheduleApprovalSchema.safeParse(req.body);
+
+    if (!approvalValidation.success) {
+      return res.status(400).json({
+        error: "Invalid employeeId",
+        details: approvalValidation.error.flatten(),
+      });
+    }
+
+    const { employeeId } = approvalValidation.data;
+
+    const existingScheduleEntry = await prisma.scheduleEntry.findUnique({
+      where: { scheduleEntryId },
+    });
+
+    if (!existingScheduleEntry) {
+      return res.status(404).json({
+        error: "Schedule entry not found",
+      });
+    }
+
+    if (existingScheduleEntry.employeeId !== employeeId) {
+      return res.status(403).json({
+        error: "You can only approve your own schedule entries",
+      });
+    }
+
+    const updatedScheduleEntry = await prisma.scheduleEntry.update({
+      where: { scheduleEntryId },
+      data: {
+        isApproved: true,
+      },
+      include: {
+        employee: true,
+        shift: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Schedule entry approved successfully",
+      scheduleEntry: updatedScheduleEntry,
+    });
+  } catch (error: any) {
+    console.error("Error approving schedule entry:", error);
+    return res.status(500).json({
+      error: "Failed to approve schedule entry",
+      details: error.message,
+    });
+  }
+});
+
 //get all schedules with their availability status
 app.get("/schedules-with-availability", async (req, res) => {
   try {
@@ -777,6 +844,7 @@ app.get("/schedule-with-availability/:employeeId", async (req, res) => {
         return {
           scheduleEntryId: schedule.scheduleEntryId,
           date: schedule.date,
+          isApproved: schedule.isApproved,
           employee: schedule.employee,
           shift: schedule.shift,
           availabilityStatus: matchingAvailability

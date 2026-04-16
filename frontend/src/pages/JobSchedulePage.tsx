@@ -8,6 +8,7 @@ type ShiftType = "MORNING" | "AFTERNOON" | "EVENING";
 type ScheduleRow = {
   scheduleEntryId: number;
   date: string;
+  isApproved: boolean;
   employee: {
     employeeId: number;
     firstName: string;
@@ -236,9 +237,7 @@ export function JobSchedulePage() {
             <button
               type="button"
               className="availability-week-nav-btn"
-              onClick={() =>
-                setSelectedWeekIndex((current) => Math.max(0, current - 1))
-              }
+              onClick={() => setSelectedWeekIndex((current) => Math.max(0, current - 1))}
               disabled={selectedWeekIndex === 0}
               aria-label="Previous week"
             >
@@ -249,9 +248,7 @@ export function JobSchedulePage() {
               type="button"
               className="availability-week-nav-btn"
               onClick={() =>
-                setSelectedWeekIndex((current) =>
-                  Math.min(weeks.length - 1, current + 1),
-                )
+                setSelectedWeekIndex((current) => Math.min(weeks.length - 1, current + 1))
               }
               disabled={selectedWeekIndex >= weeks.length - 1}
               aria-label="Next week"
@@ -300,11 +297,21 @@ export function JobSchedulePage() {
                               {assignments.map((assignment) => (
                                 <article
                                   key={assignment.scheduleEntryId}
-                                  className={`job-chip ${chipVariant(assignment.employee.employeeId)}`}
+                                  className={`job-chip ${chipVariant(assignment.employee.employeeId)}${assignment.isApproved ? " job-chip--approved" : ""}`}
                                 >
-                                  <strong>{row.hours}</strong>
+                                  <div className="job-chip-top-row">
+                                    <strong>{row.hours}</strong>
+                                    {assignment.isApproved ? (
+                                      <span
+                                        className="job-chip-tick"
+                                        aria-label="Confirmed schedule"
+                                      >
+                                        ✓
+                                      </span>
+                                    ) : null}
+                                  </div>
                                   <p>
-                                    {assignment.employee.firstName}{" "}
+                                    {assignment.employee.firstName} {" "}
                                     {assignment.employee.lastName}
                                   </p>
                                 </article>

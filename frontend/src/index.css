@@ -640,6 +640,32 @@ code {
   color: #0f172a;
 }
 
+.job-chip-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.job-chip--approved {
+  outline: 2px solid rgba(47, 143, 47, 0.35);
+  box-shadow: 0 2px 0 rgba(47, 143, 47, 0.18);
+}
+
+.job-chip-tick {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #2f8f2f;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
 .job-chip--blue {
   background: #9ec7f6;
 }
@@ -1243,6 +1269,111 @@ code {
 .work-schedule-state,
 .work-schedule-error {
   margin: 0;
+}
+
+.employee-schedule-shell {
+  background:
+    radial-gradient(
+      circle at 10% 18%,
+      rgba(14, 165, 233, 0.12),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 88% 16%,
+      rgba(251, 146, 60, 0.14),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #f5f7fb 0%, #edf3fa 100%);
+}
+
+.employee-schedule-card {
+  padding-bottom: 22px;
+}
+
+.employee-schedule-legend {
+  margin: 12px 0 16px;
+  padding: 12px 16px;
+  width: fit-content;
+  background: #f8d24b;
+  color: #263238;
+  font-weight: 700;
+  border-radius: 2px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+}
+
+.employee-schedule-board-table {
+  min-width: 1080px;
+}
+
+.employee-schedule-cell {
+  height: 92px;
+  background: #ffffff;
+  padding: 10px;
+  text-align: center;
+}
+
+.employee-schedule-entry {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 112px;
+  border: 2px solid #4b5059;
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 0 rgba(58, 66, 80, 0.14);
+}
+
+.employee-schedule-entry--approved {
+  background: #a6e29a;
+  border-color: #355b2c;
+}
+
+.employee-schedule-entry--pending {
+  background: #ffffff;
+}
+
+.employee-schedule-hours {
+  font-size: 16px;
+  font-weight: 700;
+  color: #6f7176;
+}
+
+.employee-schedule-status {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.employee-schedule-status--approved {
+  color: #355b2c;
+}
+
+.employee-schedule-status--pending {
+  color: #5a687b;
+}
+
+.employee-schedule-confirm-btn {
+  border: 2px solid #1d4ed8;
+  border-radius: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #4b8ef2, #2470e6);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(58, 66, 80, 0.14);
+}
+
+.employee-schedule-confirm-btn:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.employee-schedule-empty {
+  color: #9aa7b8;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .work-schedule-error {

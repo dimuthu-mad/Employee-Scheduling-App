@@ -387,6 +387,13 @@ export function EmployeeAvailabilityPage() {
           alt="Sundsgarden Hotel"
         />
         <div className="employees-header-actions">
+          <button
+            type="button"
+            className="register-employee-btn"
+            onClick={() => navigate("/employee-schedule")}
+          >
+            My Schedule
+          </button>
           <button type="button" className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
