@@ -97,6 +97,8 @@ model ScheduleEntry {
   shiftId     Int     
   date      DateTime 
 
+  isApproved Boolean @default(false)
+
   employee          Employee    @relation(fields: [employeeId], references: [employeeId],onDelete: Cascade)
   shift             Shift       @relation(fields: [shiftId], references: [shiftId],onDelete: Cascade)
 
