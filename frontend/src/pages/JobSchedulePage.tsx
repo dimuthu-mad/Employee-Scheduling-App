@@ -35,6 +35,17 @@ const CARD_VARIANTS = [
 
 const API_URL = "http://localhost:3000";
 
+type DayCell = {
+  date: Date;
+  key: string;
+  label: string;
+};
+
+type WeekOption = {
+  label: string;
+  days: DayCell[];
+};
+
 function toDateKey(input: string | Date): string {
   const date = typeof input === "string" ? new Date(input) : input;
   const year = date.getUTCFullYear();
@@ -65,6 +76,23 @@ function formatDayLabel(date: Date): string {
   return `${weekday} ${date.getUTCDate()}/${date.getUTCMonth() + 1}`;
 }
 
+function formatWeekRange(start: Date, end: Date): string {
+  const startMonth = start.toLocaleDateString("en-GB", {
+    month: "short",
+    timeZone: "UTC",
+  });
+  const endMonth = end.toLocaleDateString("en-GB", {
+    month: "short",
+    timeZone: "UTC",
+  });
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${start.getUTCDate()}-${end.getUTCDate()}`;
+  }
+
+  return `${startMonth} ${start.getUTCDate()} - ${endMonth} ${end.getUTCDate()}`;
+}
+
 function chipVariant(employeeId: number): (typeof CARD_VARIANTS)[number] {
   return CARD_VARIANTS[employeeId % CARD_VARIANTS.length];
 }
@@ -74,6 +102,7 @@ export function JobSchedulePage() {
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -100,12 +129,10 @@ export function JobSchedulePage() {
     void loadSchedule();
   }, []);
 
-  const weekDays = useMemo(() => {
-    const anchor =
-      scheduleRows.length > 0 ? new Date(scheduleRows[0].date) : new Date();
-    const weekStart = startOfWeekMonday(anchor);
+  const weekDays = useMemo<DayCell[]>(() => {
+    const weekStart = startOfWeekMonday(new Date());
 
-    return Array.from({ length: 7 }, (_, index) => {
+    return Array.from({ length: 14 }, (_, index) => {
       const date = addDays(weekStart, index);
       return {
         date,
@@ -113,7 +140,27 @@ export function JobSchedulePage() {
         label: formatDayLabel(date),
       };
     });
-  }, [scheduleRows]);
+  }, []);
+
+  const weeks = useMemo<WeekOption[]>(() => {
+    return [
+      { label: "Week 1", days: weekDays.slice(0, 7) },
+      { label: "Week 2", days: weekDays.slice(7, 14) },
+    ];
+  }, [weekDays]);
+
+  const selectedWeek = weeks[selectedWeekIndex] ?? weeks[0];
+
+  const selectedRangeLabel = useMemo(() => {
+    const firstDay = selectedWeek?.days[0];
+    const lastDay = selectedWeek?.days[selectedWeek.days.length - 1];
+
+    if (!firstDay || !lastDay) {
+      return "";
+    }
+
+    return formatWeekRange(firstDay.date, lastDay.date);
+  }, [selectedWeek]);
 
   const groupedByShiftDay = useMemo(() => {
     const grouped = new Map<string, ScheduleRow[]>();
@@ -167,6 +214,53 @@ export function JobSchedulePage() {
 
       <section className="employees-card">
         <h1 className="employees-title">Job Schedule</h1>
+
+        <div className="availability-toolbar">
+          <label className="availability-toolbar-select">
+            <span>Week</span>
+            <select
+              value={selectedWeekIndex}
+              onChange={(event) => {
+                setSelectedWeekIndex(Number(event.target.value));
+              }}
+            >
+              {weeks.map((week, index) => (
+                <option key={week.label} value={index}>
+                  {week.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="availability-week-nav">
+            <button
+              type="button"
+              className="availability-week-nav-btn"
+              onClick={() =>
+                setSelectedWeekIndex((current) => Math.max(0, current - 1))
+              }
+              disabled={selectedWeekIndex === 0}
+              aria-label="Previous week"
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div className="availability-week-range">{selectedRangeLabel}</div>
+            <button
+              type="button"
+              className="availability-week-nav-btn"
+              onClick={() =>
+                setSelectedWeekIndex((current) =>
+                  Math.min(weeks.length - 1, current + 1),
+                )
+              }
+              disabled={selectedWeekIndex >= weeks.length - 1}
+              aria-label="Next week"
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+          </div>
+        </div>
+
         {isLoading ? <p>Loading schedule...</p> : null}
         {!isLoading && errorMessage ? (
           <p className="employees-error">{errorMessage}</p>
@@ -180,7 +274,7 @@ export function JobSchedulePage() {
                   <th className="job-shift-column" scope="col">
                     Shift
                   </th>
-                  {weekDays.map((day) => (
+                  {selectedWeek.days.map((day) => (
                     <th key={day.key} scope="col">
                       {day.label}
                     </th>
@@ -193,7 +287,7 @@ export function JobSchedulePage() {
                     <th className="job-shift-row" scope="row">
                       {row.label}
                     </th>
-                    {weekDays.map((day) => {
+                    {selectedWeek.days.map((day) => {
                       const key = `${row.shift}-${day.key}`;
                       const assignments = groupedByShiftDay.get(key) ?? [];
 
