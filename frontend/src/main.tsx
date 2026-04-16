@@ -2,12 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { EmployeeDashboard } from "./pages/EmployeeDashboard";
 import { JobSchedulePage } from "./pages/JobSchedulePage";
 import { RegisterEmployeePage } from "./pages/RegisterEmployeePage";
 import { ViewAllEmployees } from "./pages/ViewAllEmployees";
 import { LoginPage } from "./pages/LoginPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
+import { EmployeeAvailabilityPage } from "./pages/EmployeeAvailabilityPage";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -44,7 +44,7 @@ createRoot(document.getElementById("root")!).render(
           path="/employee"
           element={
             <ProtectedRoute allowedRoles={["EMPLOYEE"]}>
-              <EmployeeDashboard />
+              <EmployeeAvailabilityPage />
             </ProtectedRoute>
           }
         />

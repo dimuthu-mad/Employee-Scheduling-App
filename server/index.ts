@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { AvailabilityStatus, PrismaClient } from "@prisma/client";
+import { AvailabilityStatus, PrismaClient, ShiftType } from "@prisma/client";
 import { Position, Role } from "@prisma/client";
 import { z } from "zod";
 const prisma = new PrismaClient();
@@ -27,6 +27,14 @@ const availabilitySchema = z.object({
   shiftId: z.number(),
   date: z.date(),
   status: z.enum(["AVAILABLE", "UNAVAILABLE", "PREFERED"]),
+});
+
+const employeeAvailabilityFormSchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  mode: z.enum(["AVAILABLE_ALL_DAY", "UNAVAILABLE_ALL_DAY", "PREFERRED"]),
+  preferredShiftType: z.enum(["MORNING", "AFTERNOON", "EVENING"]).optional(),
 });
 
 const scheduleEntrySchema = z.object({
@@ -301,6 +309,113 @@ app.get("/availability/:employeeId", async (req, res) => {
   } catch (error) {
     console.error("Error fetching availability:", error);
     res.status(500).json({ error: "Failed to fetch availability" });
+  }
+});
+
+app.post("/employee-availability/:employeeId", async (req, res) => {
+  try {
+    const validatedId = employeeIdParamSchema.safeParse(req.params);
+    if (!validatedId.success) {
+      return res.status(400).json({
+        errors: validatedId.error,
+      });
+    }
+
+    const validatedBody = employeeAvailabilityFormSchema.safeParse(req.body);
+    if (!validatedBody.success) {
+      return res.status(400).json({
+        errors: validatedBody.error,
+      });
+    }
+
+    const { employeeId } = validatedId.data;
+    const { date, mode, preferredShiftType } = validatedBody.data;
+    const normalizedDate = new Date(`${date}T00:00:00.000Z`);
+
+    const employee = await prisma.employee.findUnique({
+      where: { employeeId },
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    const shifts = await prisma.shift.findMany({
+      orderBy: { shiftId: "asc" },
+    });
+
+    if (shifts.length === 0) {
+      return res.status(404).json({ error: "No shifts found" });
+    }
+
+    if (mode === "PREFERRED" && !preferredShiftType) {
+      return res.status(400).json({
+        error: "preferredShiftType is required when mode is PREFERRED",
+      });
+    }
+
+    const preferredShift =
+      mode === "PREFERRED"
+        ? shifts.find((shift) => shift.shiftType === preferredShiftType)
+        : null;
+
+    if (mode === "PREFERRED" && !preferredShift) {
+      return res.status(400).json({
+        error: "Invalid preferredShiftType",
+      });
+    }
+
+    const updatedAvailability = await Promise.all(
+      shifts.map(async (shift) => {
+        const status =
+          mode === "AVAILABLE_ALL_DAY"
+            ? AvailabilityStatus.AVAILABLE
+            : mode === "UNAVAILABLE_ALL_DAY"
+              ? AvailabilityStatus.UNAVAILABLE
+              : shift.shiftType === preferredShiftType
+                ? AvailabilityStatus.PREFERED
+                : AvailabilityStatus.AVAILABLE;
+
+        const existingAvailability = await prisma.availability.findFirst({
+          where: {
+            employeeId,
+            shiftId: shift.shiftId,
+            date: normalizedDate,
+          },
+        });
+
+        if (existingAvailability) {
+          return prisma.availability.update({
+            where: {
+              availabilityId: existingAvailability.availabilityId,
+            },
+            data: {
+              status,
+            },
+          });
+        }
+
+        return prisma.availability.create({
+          data: {
+            employeeId,
+            shiftId: shift.shiftId,
+            date: normalizedDate,
+            status,
+          },
+        });
+      }),
+    );
+
+    return res.status(200).json({
+      message: "Availability updated successfully",
+      availability: updatedAvailability,
+    });
+  } catch (error) {
+    console.error("Error updating employee availability:", error);
+    return res.status(500).json({
+      error: "Failed to update employee availability",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
