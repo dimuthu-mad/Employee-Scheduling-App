@@ -316,6 +316,7 @@ app.get("/availability/:employeeId", async (req, res) => {
   }
 });
 
+//update availability for specific employee and date
 app.post("/employee-availability/:employeeId", async (req, res) => {
   try {
     const validatedId = employeeIdParamSchema.safeParse(req.params);

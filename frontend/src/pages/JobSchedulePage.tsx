@@ -196,9 +196,16 @@ export function JobSchedulePage() {
           <button
             type="button"
             className="register-employee-btn"
+            onClick={() => navigate("/work-schedule")}
+          >
+            Work Schedule
+          </button>
+          <button
+            type="button"
+            className="register-employee-btn"
             onClick={() => navigate("/employees")}
           >
-            Employees
+            Employee List
           </button>
           <button
             type="button"
@@ -237,7 +244,9 @@ export function JobSchedulePage() {
             <button
               type="button"
               className="availability-week-nav-btn"
-              onClick={() => setSelectedWeekIndex((current) => Math.max(0, current - 1))}
+              onClick={() =>
+                setSelectedWeekIndex((current) => Math.max(0, current - 1))
+              }
               disabled={selectedWeekIndex === 0}
               aria-label="Previous week"
             >
@@ -248,7 +257,9 @@ export function JobSchedulePage() {
               type="button"
               className="availability-week-nav-btn"
               onClick={() =>
-                setSelectedWeekIndex((current) => Math.min(weeks.length - 1, current + 1))
+                setSelectedWeekIndex((current) =>
+                  Math.min(weeks.length - 1, current + 1),
+                )
               }
               disabled={selectedWeekIndex >= weeks.length - 1}
               aria-label="Next week"
@@ -311,7 +322,7 @@ export function JobSchedulePage() {
                                     ) : null}
                                   </div>
                                   <p>
-                                    {assignment.employee.firstName} {" "}
+                                    {assignment.employee.firstName}{" "}
                                     {assignment.employee.lastName}
                                   </p>
                                 </article>

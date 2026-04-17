@@ -243,7 +243,7 @@ export function ViewAllEmployees() {
 
       <section className="employees-card">
         <h1 className="employees-title">List of all Employees</h1>
-        <p className="employees-meta">Employer ID: {session?.userId ?? "-"}</p>
+        <p className="employees-meta">Employer Name: Jonathan Rail</p>
 
         {isLoading ? <p>Loading employees...</p> : null}
 

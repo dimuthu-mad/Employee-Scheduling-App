@@ -76,10 +76,24 @@ export function RegisterEmployeePage() {
           <button
             type="button"
             className="register-employee-btn"
+            onClick={() => navigate("/work-schedule")}
+          >
+            Work Schedule
+          </button>
+          <button
+            type="button"
+            className="register-employee-btn"
+            onClick={() => navigate("/schedule")}
+          >
+            Job Schedule
+          </button>
+          <button
+            type="button"
+            className="register-employee-btn"
             onClick={() => navigate("/employees")}
             disabled={isSubmitting}
           >
-            Back to Employee List
+            Employee List
           </button>
           <button type="button" className="logout-btn" onClick={handleLogout}>
             Logout
