@@ -323,7 +323,8 @@ export function JobSchedulePage() {
                                   </div>
                                   <p>
                                     {assignment.employee.firstName}{" "}
-                                    {assignment.employee.lastName}
+                                    {assignment.employee.lastName}{" "}
+                                    {assignment.employee.position}
                                   </p>
                                 </article>
                               ))}
