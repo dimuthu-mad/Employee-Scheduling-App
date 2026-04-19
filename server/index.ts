@@ -60,6 +60,8 @@ const employeeIdParamSchema = z.object({
   employeeId: z.coerce.number().int().positive(),
 });
 
+const EMPLOYER_LOGIN_CODE = "8932";
+
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
@@ -93,6 +95,12 @@ app.post("/login", async (req, res) => {
     }
 
     if (findUser.role === Role.EMPLOYER) {
+      if (loginCode !== EMPLOYER_LOGIN_CODE) {
+        return res.status(401).json({
+          error: "Invalid email or login code",
+        });
+      }
+
       return res.status(200).json({
         message: "Employer login successful",
         findUser,

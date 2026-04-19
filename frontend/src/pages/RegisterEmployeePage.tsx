@@ -140,7 +140,7 @@ export function RegisterEmployeePage() {
             <label className="edit-field">
               <span>Login code</span>
               <input
-                type="text"
+                type="password"
                 value={loginCode}
                 onChange={(event) => setLoginCode(event.target.value)}
                 minLength={4}

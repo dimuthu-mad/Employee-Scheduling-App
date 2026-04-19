@@ -104,7 +104,7 @@ export function LoginPage() {
             <span>Login code</span>
             <input
               className="login-input"
-              type="text"
+              type="password"
               value={loginCode}
               onChange={(event) => setLoginCode(event.target.value)}
               required

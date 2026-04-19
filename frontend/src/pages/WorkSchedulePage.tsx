@@ -498,6 +498,13 @@ export function WorkSchedulePage() {
           <button
             type="button"
             className="register-employee-btn"
+            onClick={() => navigate("/employees")}
+          >
+            Employee List
+          </button>
+          <button
+            type="button"
+            className="register-employee-btn"
             onClick={() => navigate("/work-schedule")}
           >
             Work Schedule
@@ -724,7 +731,7 @@ export function WorkSchedulePage() {
             >
               <div className="work-schedule-entry-header">
                 <div>
-                  <h2>Schedule entry table</h2>
+                  <h2>Schedule Status</h2>
                   <p>
                     Assignments you create here will appear in the roster below.
                   </p>

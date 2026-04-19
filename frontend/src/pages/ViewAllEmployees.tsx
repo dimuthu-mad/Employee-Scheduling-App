@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearAuthSession, getAuthSession } from "../auth";
+import { clearAuthSession } from "../auth";
 import hotelLogo from "../assets/HotellLogo.png";
 import userLogo from "../assets/user.png";
 
@@ -30,7 +30,6 @@ const API_URL = "http://localhost:3000";
 
 export function ViewAllEmployees() {
   const navigate = useNavigate();
-  const session = getAuthSession();
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -50,6 +49,7 @@ export function ViewAllEmployees() {
   const [deletingEmployeeId, setDeletingEmployeeId] = useState<number | null>(
     null,
   );
+  const [visibleCodes, setVisibleCodes] = useState<Record<number, boolean>>({});
   const [pendingDeleteEmployee, setPendingDeleteEmployee] =
     useState<EmployeeRow | null>(null);
 
@@ -162,6 +162,13 @@ export function ViewAllEmployees() {
     setPendingDeleteEmployee(employee);
   };
 
+  const toggleCodeVisibility = (employeeId: number) => {
+    setVisibleCodes((current) => ({
+      ...current,
+      [employeeId]: !current[employeeId],
+    }));
+  };
+
   const closeDeleteModal = () => {
     if (deletingEmployeeId !== null) {
       return;
@@ -243,7 +250,7 @@ export function ViewAllEmployees() {
 
       <section className="employees-card">
         <h1 className="employees-title">List of all Employees</h1>
-        <p className="employees-meta">Employer Name: Jonathan Rail</p>
+        <p className="employees-meta">Admin Name: Jonathan Rail</p>
 
         {isLoading ? <p>Loading employees...</p> : null}
 
@@ -270,7 +277,21 @@ export function ViewAllEmployees() {
                   <p className="employee-role">
                     {employee.position.replaceAll("_", " ")}
                   </p>
-                  <p>{`${employee.loginCode}`}</p>
+                  <button
+                    type="button"
+                    className="edit-cancel-btn"
+                    onClick={() => toggleCodeVisibility(employee.employeeId)}
+                    disabled={deletingEmployeeId === employee.employeeId}
+                    aria-label={
+                      visibleCodes[employee.employeeId]
+                        ? "Hide login code"
+                        : "Show login code"
+                    }
+                  >
+                    {visibleCodes[employee.employeeId]
+                      ? employee.loginCode
+                      : "•".repeat(Math.max(employee.loginCode.length, 4))}
+                  </button>
                   <div className="employee-actions">
                     <button
                       type="button"
@@ -373,7 +394,7 @@ export function ViewAllEmployees() {
                 <label className="edit-field">
                   <span>Login code</span>
                   <input
-                    type="text"
+                    type="password"
                     inputMode="numeric"
                     maxLength={4}
                     value={editFormData.loginCode}
