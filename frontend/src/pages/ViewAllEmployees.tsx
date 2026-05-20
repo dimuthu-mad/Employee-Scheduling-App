@@ -26,7 +26,7 @@ type EmployeeRow = {
   };
 };
 
-const API_URL = "https://employee-scheduling-app-server.vercel.app/";
+const API_URL = "https://employee-scheduling-app-server.vercel.app";
 
 export function ViewAllEmployees() {
   const navigate = useNavigate();

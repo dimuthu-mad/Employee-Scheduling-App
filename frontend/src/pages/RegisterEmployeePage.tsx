@@ -10,7 +10,7 @@ type CreateEmployeeResponse = {
   error?: string;
 };
 
-const API_URL = "https://employee-scheduling-app-server.vercel.app/";
+const API_URL = "https://employee-scheduling-app-server.vercel.app";
 
 export function RegisterEmployeePage() {
   const navigate = useNavigate();
