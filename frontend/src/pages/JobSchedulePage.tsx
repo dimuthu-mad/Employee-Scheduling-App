@@ -34,7 +34,7 @@ const CARD_VARIANTS = [
   "job-chip--white",
 ] as const;
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://employee-scheduling-app-server.vercel.app/";
 
 type DayCell = {
   date: Date;

@@ -34,7 +34,7 @@ type WeekOption = {
   days: DayCell[];
 };
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://employee-scheduling-app-server.vercel.app/";
 
 const SHIFT_ROWS: Array<{ shift: ShiftType; label: string; hours: string }> = [
   { shift: "MORNING", label: "Morning shift", hours: "7-15" },

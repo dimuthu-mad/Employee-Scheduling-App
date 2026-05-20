@@ -50,7 +50,7 @@ type DaySummary = {
   preferredShift?: ShiftType;
 };
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://employee-scheduling-app-server.vercel.app/";
 
 const SHIFT_ROWS: Array<{ shift: ShiftType; label: string }> = [
   { shift: "MORNING", label: "Morning shift" },

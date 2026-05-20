@@ -62,7 +62,7 @@ type SelectedCell = {
   dateKey: string;
 };
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://employee-scheduling-app-server.vercel.app/";
 
 const SHIFT_ORDER: Record<ShiftType, number> = {
   MORNING: 0,
