@@ -63,7 +63,9 @@ const employeeIdParamSchema = z.object({
 const EMPLOYER_LOGIN_CODE = "8932";
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(
+  cors({ origin: "https://employee-scheduling-app-frontend.vercel.app" }),
+);
 app.use(express.json());
 
 app.listen(3000, () => {
